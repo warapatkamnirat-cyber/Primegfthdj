@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AUTH | PRIME STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-primary: #D4AF37;
+            --gold-gradient: linear-gradient(135deg, #D4AF37, #F9F1CC, #B38728, #FBF5B7, #AA771C);
+        }
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Logic */
+        .prime-card {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .text-prime { background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Animation */
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .logo-float { animation: float 4s ease-in-out infinite; }
+
+        /* Button Styling */
+        .btn-auth {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .btn-auth:active { transform: scale(0.95); }
+
+        /* Overlay Effect */
+        .bg-glow {
+            position: absolute;
+            width: 300px; height: 300px;
+            background: var(--gold-primary);
+            filter: blur(150px);
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* Custom Modal เหมือนหน้าหลัก */
+        #custom-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow top-0 left-0"></div>
+    <div class="bg-glow bottom-0 right-0"></div>
+
+    <div class="max-w-md w-[90%] prime-card p-10 text-center animate-fade-in">
+        <div class="mb-10 flex justify-center relative">
+            <div class="absolute inset-0 bg-gold-primary opacity-20 blur-3xl rounded-full logo-float"></div>
+            <img src="PrimeStore.png" alt="Logo" class="w-28 h-28 object-contain relative z-10 drop-shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+        </div>
+
+        <h1 class="text-4xl font-black text-prime italic uppercase tracking-tighter mb-1">Prime Store</h1>
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] mb-12">Ultimate Access Terminal</p>
+
+        <div class="space-y-4">
+            <button onclick="authAction('google')" class="btn-auth w-full bg-white/5 hover:bg-white/10 text-white font-bold py-5 px-6 rounded-2xl flex items-center justify-between group transition">
+                <div class="flex items-center gap-4">
+                    <img src="https://www.google.com/favicon.ico" class="w-5 h-5 group-hover:scale-110 transition">
+                    <span class="text-xs uppercase tracking-widest">Connect with Google</span>
+                </div>
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+            </button>
+
+            <button onclick="authAction('facebook')" class="btn-auth w-full bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] font-bold py-5 px-6 rounded-2xl flex items-center justify-between group transition border-none">
+                <div class="flex items-center gap-4">
+                    <svg class="w-6 h-6 fill-current group-hover:scale-110 transition" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span class="text-xs uppercase tracking-widest text-white">Connect with Facebook</span>
+                </div>
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-white/5">
+            <div id="msg-container" class="flex flex-col items-center gap-3">
+                <p id="msg" class="text-gray-600 text-[9px] font-black uppercase tracking-[0.4em]">Ready to Connect</p>
+                <div id="loading-bar" class="w-20 h-[1px] bg-white/5 hidden overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gold-primary animate-[slide_1s_infinite]"></div>
+                </div>
+            </div>
+            
+            <button onclick="forceLogout()" class="mt-6 text-gray-600 text-[8px] font-bold uppercase tracking-widest hover:text-red-500 transition duration-300">
+                Lauch Logout Protocol
+            </button>
+        </div>
+    </div>
+
+    <div id="custom-modal-overlay">
+        <div id="modal-content" class="w-[85%] max-w-sm p-8 bg-[#111] border border-gold-primary/30 rounded-[30px] text-center shadow-2xl">
+            </div>
+    </div>
+
+    <style>
+        @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDne6T2ZmFrqP4idNGNHfp0CipTUxLkXHo",
+            authDomain: "prime-store-487ac.firebaseapp.com",
+            projectId: "prime-store-487ac",
+            storageBucket: "prime-store-487ac.firebasestorage.app",
+            messagingSenderId: "312275328003",
+            appId: "1:312275328003:web:92459c25dde3fd115c0236",
+            measurementId: "G-M8R7C11D8Z"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const ADMIN_EMAIL = "primestore.antmob@gmail.com";
+
+        // ระบบ Custom Alert พรีเมียม
+        const UIAlert = (title, desc) => {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('custom-modal-overlay');
+                document.getElementById('modal-content').innerHTML = `
+                    <h2 class="text-white font-black text-xl italic mb-2 tracking-widest uppercase">${title}</h2>
+                    <p class="text-gray-400 text-[10px] mb-6 tracking-wider">${desc}</p>
+                    <button id="close-btn" class="w-full py-4 bg-white/5 border border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition">รับทราบ</button>
+                `;
+                overlay.style.display = 'flex';
+                document.getElementById('close-btn').onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve();
+                };
+            });
+        };
+
+        window.forceLogout = async () => {
+            await signOut(auth);
+            localStorage.clear();
+            document.getElementById("msg").innerText = "CLEARED SUCCESSFUL";
+            await UIAlert("LOGOUT COMPLETE", "ล้างสถานะการเข้าสู่ระบบบัญชีเดิมเรียบร้อยแล้วครับบรีส");
+        };
+
+        window.authAction = async (providerName) => {
+            const msg = document.getElementById("msg");
+            const loading = document.getElementById("loading-bar");
+            
+            msg.innerText = "AUTHENTICATING...";
+            loading.classList.remove('hidden');
+            
+            let provider = providerName === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
+
+            try {
+                provider.setCustomParameters({ prompt: 'select_account' });
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                const loggedInEmail = user.email.toLowerCase().trim();
+                const targetAdmin = ADMIN_EMAIL.toLowerCase().trim();
+
+                localStorage.setItem('user_email', user.email);
+                localStorage.setItem('user_name', user.displayName);
+                localStorage.setItem('user_avatar', user.photoURL);
+
+                const is_admin = (loggedInEmail === targetAdmin);
+                await setDoc(doc(db, "users", user.uid), {
+                    name: user.displayName, email: user.email,
+                    role: is_admin ? "admin" : "member",
+                    lastLogin: serverTimestamp()
+                }, { merge: true });
+
+                if (is_admin) {
+                    msg.innerText = "SYSTEM ACCESS GRANTED: ADMIN";
+                    msg.className = "text-yellow-500 text-[9px] font-black tracking-[0.4em] animate-pulse";
+                    setTimeout(() => window.location.href = "admin.html", 1500);
+                } else {
+                    msg.innerText = "SYSTEM ACCESS GRANTED: USER";
+                    msg.className = "text-emerald-400 text-[9px] font-black tracking-[0.4em]";
+                    setTimeout(() => window.location.href = "index.html", 1500);
+                }
+
+            } catch (error) {
+                console.error(error);
+                loading.classList.add('hidden');
+                msg.innerText = "ACCESS DENIED: " + error.code;
+                msg.className = "text-red-500 text-[9px] font-black tracking-[0.4em]";
+                await UIAlert("CONNECTION ERROR", "ไม่สามารถเข้าสู่ระบบได้: " + error.code);
+            }
+        };
+    </script>
+</body>
+</html>
